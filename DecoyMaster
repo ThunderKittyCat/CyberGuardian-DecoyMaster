@@ -1,0 +1,472 @@
+#!/bin/bash
+
+# Store the current directory in a variable
+current_dir=$(pwd)
+
+# Get the machine's IP address dynamically
+machine_ip=$(hostname -I | awk '{print $1}')
+
+
+# Check if the "logs" directory exists and delete if it does already exit.
+function rm_logs_if_exist() {
+	# Check if the "logs" directory exists
+	if [ -d "logs" ]; then
+		echo "$(format_bold "$(color_green "[#] Removing the logs directory for more use of the script...")")"
+		sudo rm -r "logs"
+		sleep 1
+	fi
+}
+
+
+# Check if all the services are installed and if not, download them.
+function check_and_install_service() {
+    # Check package manager
+    if command -v apt-get &> /dev/null; then
+        PACKAGE_MANAGER="apt-get"
+    elif command -v dnf &> /dev/null; then
+        PACKAGE_MANAGER="dnf"
+    elif command -v pacman &> /dev/null; then
+        PACKAGE_MANAGER="pacman"
+    else
+        echo "$(format_bold "$(color_red "[!] Unsupported package manager. Exiting...")")"
+        exit 1
+    fi
+
+    # Install services
+    for x in vsftpd samba ssh; do
+        sleep 1
+        if [ -z "$(which $x)" ]; then
+            echo "$(format_bold "$(color_red "[!] $x is not installed, installing..")")"
+            sleep 1
+            echo "$(format_bold "$(color_blue "[#] All installation logs are saved in logs/program_logs folder")")"
+            LOG_FILE="logs/$x.program_log.txt"  # Create log file for each package inside the log folder
+            touch lo==
+            sudo "$PACKAGE_MANAGER" install -y $x > "$LOG_FILE" 2>&1  # Redirect both stdout and stderr to the log file\
+            echo "$(format_bold "$(color_green "[#] $x is installed, YAY :D")")"
+        else
+            echo "$(format_bold "$(color_green "[#] $x is installed, YAY :D")")"
+        fi
+        sleep 1
+    done
+    sleep 2
+    echo "$(format_bold "$(color_white "[*] All the download logs are saved manually in logs folder")")"
+}
+
+
+# Function include all the colors for later use
+function color_functions() {
+  color_red() {
+    echo -e "\e[91m$1\e[0m"
+  }
+
+  color_blue() {
+    echo -e "\e[94m$1\e[0m"
+  }
+
+  color_green() {
+    echo -e "\e[32m$1\e[0m"
+  }
+
+  color_gold() {
+    echo -e "\e[93m$1\e[0m"
+  }
+
+  color_purple() {
+    echo -e "\e[95m$1\e[0m"
+  }
+
+  color_dark_green() {
+    echo -e "\e[92m$1\e[0m"
+  }
+
+  color_dark_blue() {
+    echo -e "\e[38;5;22m$1\e[0m"
+  }
+
+  color_dark_red() {
+    echo -e "\e[31m$1\e[0m"
+  }
+
+  color_dark_purple() {
+    echo -e "\e[35m$1\e[0m"
+  }
+
+  color_orange() {
+    echo -e "\e[33m$1\e[0m"
+  }
+
+  color_brown() {
+    echo -e "\e[33m$1\e[0m"
+  }
+
+  color_black() {
+    echo -e "\e[30m$1\e[0m"
+  }
+
+  color_white() {
+    echo -e "\e[97m$1\e[0m"
+  }
+
+  color_yellow() {
+    echo -e "\e[38;5;220m$1\e[0m"
+  }
+
+  color_aqua() {
+    echo -e "\e[96m$1\e[0m"
+  }
+
+  color_cyan() {
+    echo -e "\e[36m$1\e[0m"
+  }
+
+  color_pink() {
+    echo -e "\e[95m$1\e[0m"
+  }
+
+  color_magenta() {
+    echo -e "\e[95m$1\e[0m"
+  }
+
+  color_gray() {
+    echo -e "\e[90m$1\e[0m"
+  }
+
+  color_dark_gray() {
+    echo -e "\e[2m$1\e[0m"
+  }
+
+  color_light_blue() {
+    echo -e "\e[94m$1\e[0m"
+  }
+
+  color_lime() {
+    echo -e "\e[92m$1\e[0m"
+  }
+
+  color_light_gray() {
+    echo -e "\e[37m$1\e[0m"
+  }
+}
+color_functions
+
+
+# Function include all the formats for later use
+function format_functions() {
+	format_bold() {
+		echo -e "\e[1m$1\e[0m"
+	}
+	format_tilt() {
+		echo -e "\e[3m$1\e[0m"
+	}
+	format_underline() {
+		echo -e "\e[4m$1\e[0m"
+	}
+	format_blink() {
+		echo -e "\e[5m$1\e[0m"
+	}
+	format_inverted() {
+		echo -e "\e[7m$1\e[0m"
+	}
+}
+format_functions
+
+
+# Function include progress bar for later use
+function progress_bar() {
+  local duration=$1
+  local bar_length=20
+
+  for ((i=0; i<=duration; i++)); do
+    local filled=$(printf "%-$((i*bar_length/duration))s" | tr ' ' '=')
+    local remaining=$(printf "%-$(((duration-i)*bar_length/duration))s" | tr ' ' '-')
+    printf "\r[%s%s] %d%%" "$filled" "$remaining" "$((i * 100 / duration))"
+    sleep 1
+  done
+  printf "\n"
+}
+
+
+# Displays the header
+function display_header() {
+    # ANSI color codes
+    RED='\033[1;31m'
+    GREEN='\033[1;32m'
+    YELLOW='\033[1;33m'
+    RESET='\033[0m'  # Reset to default color
+
+    # Figlet font
+    FIGLET_FONT="slant"
+
+    # Clear the screen
+    clear
+
+    # Display the header
+    echo -e "${RED}"
+    figlet -f ${FIGLET_FONT} "HoneyPot Activated"
+    echo -e "${RESET}"
+    echo -e "${GREEN}by Thunder${RESET}"
+    echo -e "${YELLOW}-----------------------------------------${RESET}"
+}
+
+############################################ SSH --> 
+
+# Function to monitor SSH connections
+function monitor_ssh_connections() {
+    log_file="logs/established_connections.log"
+    
+    # Run ss command, extract IP addresses, and append to log file
+	sudo ss -tuanp | grep 'sshd' | grep -i 'estab' | grep -oP '(\d{1,3}\.){3}\d{1,3}' | grep -iv '0.0.0.0' | grep -iv "$machine_ip" | sort | uniq >> "$log_file"
+	
+	log_file_temp="logs/established_connections_TEMP.log"
+	
+	cat "$log_file" | sort | uniq > "$log_file_temp" 2>&1
+	cat "$log_file_temp" > "$log_file" 2>&1
+	sudo rm -r "$log_file_temp" &>/dev/null 2>&1
+
+    # Sleep for a short duration before calling itself again
+    sleep 3
+
+    # Call the function recursively
+    monitor_ssh_connections
+}
+
+# Function to start monitoring SSH
+function start_ssh_monitoring() {
+    echo "$(format_bold "$(color_green "[#] Monitoring SSH...")")"
+
+    # Start SSH service
+    sudo systemctl start ssh
+    
+    # Define log file
+    log_file="logs/honeypot_activity_SSH.log"
+    
+    # Monitor SSH logs in real-time and display
+    echo "$(format_bold "$(format_blink "$(color_gold "SSH activity logs are saved in logs/honeypot_activity_SSH.log")")")"
+    echo "SSH Activity:" > "$log_file"
+    sudo journalctl -f -u ssh | grep -i --line-buffered 'sshd' >> "$log_file" &
+    
+    
+    # Run the monitoring function in the background
+    monitor_ssh_connections & # Making the function work in the background, so other functions can keep working...
+    
+    echo "$(format_bold "$(color_green "[#] SSH connections are being monitored and logged")")"
+    
+}
+
+############################################ --> SSH, FTP-->
+
+# Function to monitor SSH connections
+function monitor_ftp_connections() {
+    log_file="logs/established_connections.log"
+    
+    # Run ss command, extract IP addresses, and append to log file
+	sudo ss -tuanp | grep 'vsftpd' | grep -i 'estab' | grep -oP '(\d{1,3}\.){3}\d{1,3}' | grep -iv '0.0.0.0' | grep -iv "$machine_ip" | sort | uniq >> "$log_file"
+	
+	log_file_temp="logs/established_connections_TEMP.log"
+	
+	cat "$log_file" | sort | uniq > "$log_file_temp" 2>&1
+	cat "$log_file_temp" > "$log_file" 2>&1
+	sudo rm -r "$log_file_temp" &>/dev/null 2>&1
+
+    # Sleep for a short duration before calling itself again
+    sleep 3
+
+    # Call the function recursively
+    monitor_ftp_connections 
+}
+
+# Function to start monitoring FTP
+function start_ftp_monitoring() {
+    echo "$(format_bold "$(color_green "[#] Monitoring FTP...")")"
+    
+    # Start SSH service
+    sudo systemctl start vsftpd
+    
+    # Define log file
+    log_file="logs/honeypot_activity_FTP.log"
+    
+    # Monitor SSH logs in real-time and display
+    echo "$(format_bold "$(format_blink "$(color_gold "FTP activity logs are saved in logs/honeypot_activity_FTP.log")")")"
+    echo "FTP Activity:" > "$log_file"
+    sudo journalctl -f -u vsftpd | grep -i --line-buffered 'vsftpd' >> "$log_file" &
+    
+    # Run the monitoring function in the background
+    monitor_ftp_connections & # Making the function work in the background, so other functions can keep working...
+    
+    echo "$(format_bold "$(color_green "[#] FTP connections are being monitored and logged")")"
+}
+
+############################################ --> FTP, SMB -->
+
+# Function to create and configure the shared directory for SMB
+function setup_smb_shared_directory() {
+    shared_dir="/srv/samba/share"
+    
+    # Create the shared directory
+    sudo mkdir -p "$shared_dir"
+    
+    # Set permissions for the shared directory
+    sudo chmod 777 "$shared_dir"  # Adjust permissions as needed
+
+    # Populate the shared directory with dummy files or content (optional)
+    sudo touch "$shared_dir"/dummy_file.txt
+
+    # Configure Samba
+    sudo tee -a /etc/samba/smb.conf > /dev/null <<EOF
+[share]
+    path = $shared_dir
+    writable = yes
+    guest ok = yes
+EOF
+
+    # Restart SMB service
+    sudo systemctl restart smbd
+
+    echo "$(format_bold "$(color_green "[#] Shared directory for SMB created and configured successfully")")"
+}
+
+# Function to monitor SMB connections
+function monitor_smb_connections() {
+    log_file="logs/established_connections.log"
+    
+    # Run ss command, extract IP addresses, and append to log file
+    sudo ss -tuanp | grep 'smbd' | grep -i 'estab' | grep -oP '(\d{1,3}\.){3}\d{1,3}' | grep -iv '0.0.0.0' | grep -iv "$machine_ip" | sort | uniq >> "$log_file"
+    
+    log_file_temp="logs/established_connections_TEMP.log"
+    
+    cat "$log_file" | sort | uniq > "$log_file_temp" 2>&1
+    cat "$log_file_temp" > "$log_file" 2>&1
+    sudo rm -r "$log_file_temp" &>/dev/null 2>&1
+
+    # Sleep for a short duration before calling itself again
+    sleep 3
+
+    # Call the function recursively
+    monitor_smb_connections
+}
+
+# Main function to start SMB monitoring
+function start_smb_monitoring() {
+	
+	# Start SMB service
+    sudo systemctl start smbd
+	
+    echo "$(format_bold "$(color_green "[#] Setting up SMB shared directory...")")"
+    setup_smb_shared_directory
+    
+    echo "$(format_bold "$(color_green "[#] Monitoring SMB...")")"
+    
+    # Define log file
+    log_file="logs/honeypot_activity_SMB.log"
+    
+    # Monitor SSH logs in real-time and display
+    echo "$(format_bold "$(format_blink "$(color_gold "SMB activity logs are saved in logs/honeypot_activity_SMB.log")")")"
+    echo "SMB Activity:" > "$log_file"
+    sudo journalctl -f -u smbd | grep -i --line-buffered 'smbd' >> "$log_file" &
+    
+    # Run SMB monitoring function in the background
+    monitor_smb_connections & # Making the function work in the background, so other functions can keep working...
+}
+
+############################################ --> SMB, All -->
+
+# Function to start all installed services 
+function start_installed_services() {
+    start_ssh_monitoring
+    start_ftp_monitoring
+    start_smb_monitoring
+}
+
+############################################ --> All
+
+
+# Function to get hacker's information
+function ip_info() { 
+	sleep 3
+	
+	# Define the file containing the list of IP addresses
+	ip_list="logs/established_connections.log"
+	
+	# Function to process each IP address
+	process_ip() {
+		ip="$1"
+		echo "Processing IP: $ip"
+		sleep 3
+		# Run whois command
+		whois "$ip" > whois_results_"$ip"_temp.txt 2>/dev/null
+		cat whois_results_"$ip"_temp.txt | grep -i "country" > whois_results_"$ip".txt 2>/dev/null
+		cat whois_results_"$ip"_temp.txt | grep -i "Organization" | grep -iv "comment" >> whois_results_"$ip".txt 2>/dev/null
+		cat whois_results_"$ip"_temp.txt | grep -i "OrgTechPhone" >> whois_results_"$ip".txt 2>/dev/null
+		cat whois_results_"$ip"_temp.txt | grep -i "OrgAbusePhone" >> whois_results_"$ip".txt 2>/dev/null
+		sudo rm -r whois_results_"$ip"_temp.txt &>/dev/null 2>/dev/null
+		# Run nmap scanning
+		nmap "$ip" > nmap_results_"$ip".txt
+	}
+
+	# Infinite loop to continuously monitor the list file for new IP addresses
+	while :
+	do
+		# Read each IP address from the list file and process it
+		while IFS= read -r ip
+		do
+			process_ip "$ip"
+		done < "$ip_list"
+
+		# Sleep for a short duration before checking the list again
+		sleep 10  # Sleep for 60 seconds (adjust as needed)
+	done
+}
+
+# Main function to choose and start services
+function choose_and_start_services() {
+    echo "$(format_bold "$(color_blue "Choose services to monitor:")")"
+    sleep 1
+    echo "1. $(format_bold "SSH")"
+    echo "2. $(format_bold "FTP")"
+    echo "3. $(format_bold "SMB")"
+    echo "4. $(format_bold "Start all services")"
+
+    read -p "$(format_bold "Enter your choice (comma-separated): ")" choices
+
+    IFS=',' read -ra selected_services <<< "$choices"
+
+    for service in "${selected_services[@]}"; do
+        case $service in
+            1) start_ssh_monitoring ;;
+            2) start_ftp_monitoring ;;
+            3) start_smb_monitoring ;;
+            4) start_installed_services ;;
+            *) echo "$(format_bold "$(color_red "[!] Invalid choice: $service")")" ;;
+        esac
+    done
+}
+
+
+# Function to add common users, to entice hackers to hack the honeypot
+function add_easy_user() {
+	sudo useradd -m -p $(openssl passwd -1 admin) admin
+	sudo useradd -m -p $(openssl passwd -1 user) user
+	sudo useradd -m -p $(openssl passwd -1 123) user123
+}
+
+# Main function
+main() {
+    rm_logs_if_exist
+    mkdir logs &>/dev/null # Make a log folder for all the different logs
+    
+    check_and_install_service # Install missing services IF needed
+    sleep 2
+    display_header # Displays header
+
+    # Record the start time
+    start_time=$(date +%Y-%m-%d\ %H:%M:%S) # Record the start time
+    
+    add_easy_user # Function to add common users, to entice hackers to hack the honeypot
+    choose_and_start_services # Main function to choose and start services
+    sudo rm -r 'lo==' &>/dev/null 
+    ip_info # Function to get hacker's information
+    monitor_activity # Function to monitor and display real-time Honeypot activity
+}
+
+# Call the main function
+main
