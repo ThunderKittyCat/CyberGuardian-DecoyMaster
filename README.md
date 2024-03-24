@@ -11,9 +11,9 @@ HoneyPot Vigilance is a sophisticated cybersecurity script designed to enhance n
 - **Flexible Configuration**: Offers the flexibility to choose and monitor specific services or start monitoring all installed services simultaneously.
 
 ## Usage
-1. **Clone the Repository**: `git clone https://github.com/yourusername/honeypot-vigilance.git`
-2. **Navigate to the Directory**: `cd DecoyMaster `
-3. **Run the Script**: `bash DecoyMaster.sh`
+1. **Clone the Repository**: `git clone https://github.com/ThunderKittyCat/CyberGuardian-DecoyMaster.git`
+2. **Navigate to the Directory**: `cd CyberGuardian-DecoyMaster`
+3. **Run the Script**: `sudo ./DecoyMaster`
 4. **Follow On-Screen Prompts**: Choose services to monitor and let the script handle the rest.
 
 ## Requirements
@@ -27,4 +27,14 @@ This script is intended for educational and cybersecurity research purposes only
 ## Credits
 Developed by Thunder
 
-For more information, visit the [GitHub Repository](https://github.com/yourusername/honeypot-vigilance).
+## Repository Structure
+
+- [CyberGuardian DecoyMaster Script](./DecoyMaster): The main script file.
+- [README.md](./README.md): Overview and instructions.
+- [LICENSE](./LICENSE): License information.
+
+## Script Details
+
+The CyberGuardian DecoyMaster script automates the setup and monitoring of a honeypot environment, allowing cybersecurity professionals to analyze and respond to potential threats effectively.
+
+For more information and updates, visit the [repository](https://github.com/ThunderKittyCat/CyberGuardian-DecoyMaster).
