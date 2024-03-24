@@ -1,4 +1,4 @@
-# HoneyPot Vigilance
+# CyberGuardian-DecoyMaster
 
 ## Overview
 HoneyPot Vigilance is a sophisticated cybersecurity script designed to enhance network security by setting up a honeypot environment to attract and monitor potential threats. Leveraging multiple services like SSH, FTP, and SMB, it creates a virtual trap for malicious actors, capturing their activities for analysis and response.
